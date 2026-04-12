@@ -6,6 +6,9 @@ public class PlayerMovement : MonoBehaviour
 {
     public float turnSpeed = 20f;
 
+    public GameObject exclamationMark;
+    private Observer[] enemies;
+
     Animator m_Animator;
     Rigidbody m_Rigidbody;
     AudioSource m_AudioSource;
@@ -17,6 +20,24 @@ public class PlayerMovement : MonoBehaviour
         m_Animator = GetComponent<Animator> ();
         m_Rigidbody = GetComponent<Rigidbody> ();
         m_AudioSource = GetComponent<AudioSource> ();
+        enemies = Object.FindObjectsByType<Observer>(FindObjectsSortMode.None);
+    }
+
+    // currently just used to turn on exclamation mark when player is seen by an ghost
+    void Update()
+    {
+        bool seen = false;
+
+        foreach (Observer enemy in enemies)
+        {
+            if (enemy.enemyType == Observer.EnemyType.Ghost && enemy.isLookingAtPlayer)
+            {
+                seen = true;
+                break;
+            }
+        }
+
+        exclamationMark.SetActive(seen);
     }
 
     void FixedUpdate ()

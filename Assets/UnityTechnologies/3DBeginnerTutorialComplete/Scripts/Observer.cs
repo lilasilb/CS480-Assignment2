@@ -8,6 +8,15 @@ public class Observer : MonoBehaviour
     public GameEnding gameEnding;
 
     bool m_IsPlayerInRange;
+    public bool isLookingAtPlayer;
+
+    // used to differentiate enemy types so that exclamation mark will appear only for ghosts
+    public enum EnemyType
+    {
+        Ghost,
+        Gargoyle
+    }
+    public EnemyType enemyType;
 
     void OnTriggerEnter (Collider other)
     {
@@ -27,17 +36,32 @@ public class Observer : MonoBehaviour
 
     void Update ()
     {
-        if (m_IsPlayerInRange)
+        isLookingAtPlayer = false;
+
+        // direction player is in to look at
+        Vector3 direction = player.position - transform.position + Vector3.up;
+        // normalize for dot product usage
+        Vector3 toPlayer = direction.normalized;
+
+        // compares where enemy is facing to direction of player (1 means player is directly in front)
+        float dot = Vector3.Dot(transform.forward, toPlayer);
+
+        Ray ray = new Ray(transform.position, direction);
+        RaycastHit raycastHit;
+        
+        if (Physics.Raycast (ray, out raycastHit))
         {
-            Vector3 direction = player.position - transform.position + Vector3.up;
-            Ray ray = new Ray(transform.position, direction);
-            RaycastHit raycastHit;
-            
-            if (Physics.Raycast (ray, out raycastHit))
+            if (raycastHit.collider.transform == player)
             {
-                if (raycastHit.collider.transform == player)
+                // dot being exactly 1 is rare, so give boundary of 0.8
+                if (dot > 0.8f)
                 {
-                    gameEnding.CaughtPlayer ();
+                    isLookingAtPlayer = true;
+                }
+
+                if (m_IsPlayerInRange)
+                {
+                    gameEnding.CaughtPlayer();
                 }
             }
         }
